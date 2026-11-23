@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>WebGuard Island - 黑金封鎖清單管理</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 28px 20px;
+      background: #09090b;
+      color: #f8fafc;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans TC", sans-serif;
+    }
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+    }
+    .header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 20px 24px;
+      background: linear-gradient(135deg, #111115 0%, #1c1917 100%);
+      border: 2px solid #d4af37;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(212, 175, 55, 0.16);
+      margin-bottom: 22px;
+    }
+    .header h1 {
+      margin: 0 0 6px 0;
+      font-size: 20px;
+      color: #fde68a;
+    }
+    .header p {
+      margin: 0;
+      font-size: 13px;
+      color: #a1a1aa;
+    }
+    .summary-badges {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .pill {
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(212, 175, 55, 0.14);
+      border: 1px solid rgba(212, 175, 55, 0.45);
+      color: #fbbf24;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .btn {
+      padding: 9px 16px;
+      border-radius: 10px;
+      border: 1px solid #d4af37;
+      background: #09090b;
+      color: #fbbf24;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .btn:hover:not(:disabled) {
+      background: #d4af37;
+      color: #09090b;
+    }
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #d4af37 0%, #f59e0b 100%);
+      color: #09090b;
+      border: none;
+    }
+    .btn-primary:hover:not(:disabled) {
+      filter: brightness(1.08);
+      background: linear-gradient(135deg, #d4af37 0%, #f59e0b 100%);
+      color: #09090b;
+    }
+    .card {
+      background: #141418;
+      border: 1px solid #27272a;
+      border-radius: 14px;
+      padding: 18px 20px;
+      margin-bottom: 18px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    th, td {
+      text-align: left;
+      padding: 12px 10px;
+      border-bottom: 1px solid #27272a;
+      vertical-align: middle;
+    }
+    th {
+      color: #a1a1aa;
+      font-weight: 600;
+      font-size: 12px;
+    }
+    tr:last-child td { border-bottom: none; }
+    .cat-badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      background: rgba(212, 175, 55, 0.14);
+      color: #fbbf24;
+      border: 1px solid rgba(212, 175, 55, 0.35);
+      white-space: nowrap;
+    }
+    .url-text {
+      font-size: 11px;
+      color: #71717a;
+      word-break: break-all;
+      margin-top: 3px;
+    }
+    .status-ok { color: #4ade80; font-size: 12px; }
+    .status-err { color: #f87171; font-size: 12px; }
+    .status-none { color: #71717a; font-size: 12px; }
+    .search-bar {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    input[type="text"] {
+      flex: 1;
+      padding: 9px 12px;
+      border-radius: 9px;
+      border: 1px solid #3f3f46;
+      background: #09090b;
+      color: #f8fafc;
+      font-size: 13px;
+      outline: none;
+    }
+    input[type="text"]:focus {
+      border-color: #d4af37;
+    }
+    .search-results {
+      margin-top: 12px;
+      max-height: 220px;
+      overflow-y: auto;
+      font-size: 12px;
+    }
+    .match-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 8px;
+      border-bottom: 1px solid #27272a;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div>
+        <h1>🛡️ 黑金封鎖清單管理中心</h1>
+        <p>命中下列三類清單的網站與 IP 將觸發「黑金」狀態並直接自動封鎖。請依需求手動點擊更新。</p>
+        <p style="margin-top:6px;color:#fbbf24;font-size:12px;">💡 提醒：更新完成後即刻生效（無需重載外掛）；若更新前已開啟其他網頁，請在該分頁按 <strong>F5 重新整理</strong> 即可套用最新黑名單。</p>
+      </div>
+      <div class="summary-badges">
+        <span class="pill">已收錄網域：<span id="total-domains">0</span></span>
+        <span class="pill">已收錄 IP：<span id="total-ips">0</span></span>
+        <button class="btn btn-primary" id="update-all-btn">🔄 全部手動更新</button>
+      </div>
+    </div>
+
+    <div id="update-toast" style="display:none;margin-bottom:14px;padding:10px 16px;border-radius:10px;background:rgba(34,197,94,0.14);border:1px solid rgba(34,197,94,0.45);color:#86efac;font-size:13px;font-weight:600;">
+      ✅ 清單已更新並立即生效！請在更新前已開啟的網頁分頁按 <strong>F5 重新整理</strong>，即可套用最新封鎖規則。
+    </div>
+
+    <div class="card">
+      <table>
+        <thead>
+          <tr>
+            <th>分類</th>
+            <th>清單名稱 / 來源網址</th>
+            <th>收錄筆數</th>
+            <th>最後更新時間</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="lists-tbody">
+          <tr><td colspan="5" style="text-align:center;color:#71717a;">載入中...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:10px;">
+        <div>
+          <strong style="color:#fde68a;">🚫 我手動封鎖的網域 (<span id="user-blocked-count">0</span>)</strong>
+          <div style="font-size:12px;color:#a1a1aa;margin-top:2px;">你在靈動島點選「封鎖」的網域會顯示在這裡，可隨時解除或複製成 AI 分析指令。</div>
+        </div>
+        <button class="btn" id="copy-ai-prompt-btn">🤖 一鍵複製 AI 指令（分析列表）</button>
+      </div>
+      <div id="user-blocked-list" class="search-results" style="margin-top:6px;"></div>
+    </div>
+
+    <div class="card">
+      <strong style="color:#fde68a;">🔍 查詢本地黑名單（確認特定網域或 IP 是否已收錄）</strong>
+      <div class="search-bar">
+        <input type="text" id="search-input" placeholder="輸入網域或 IP（例如：doubleclick.net 或 185.）" />
+        <button class="btn" id="search-btn">查詢</button>
+      </div>
+      <div id="search-results" class="search-results"></div>
+    </div>
+  </div>
+
+  <script src="lists.js"></script>
+</body>
+</html>
