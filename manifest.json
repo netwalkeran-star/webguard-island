@@ -1,0 +1,37 @@
+{
+  "manifest_version": 3,
+  "name": "WebGuard Island - 資安靈動島",
+  "version": "1.0.0",
+  "description": "右上角靈動島即時顯示網站安全狀態（安全/廣告跳板/大陸IP/側錄），支援網站大小、連線數透視與免點假X安全關廣告。",
+  "permissions": [
+    "webRequest",
+    "webNavigation",
+    "storage",
+    "tabs",
+    "downloads",
+    "declarativeNetRequest"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["page_hook.js"],
+      "run_at": "document_start",
+      "world": "MAIN"
+    },
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_start"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "WebGuard Island 資安靈動島"
+  }
+}
